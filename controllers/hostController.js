@@ -168,10 +168,10 @@ exports.suggestPrice = async (req, res) => {
   try {
     const { EventName } = req.body;
   
- const groq = new Groq({ apiKey: ' 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' });
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
     
     const result = await groq.chat.completions.create({
-      model: 'llama3-8b-8192',
+      model: 'llama-3.3-70b-versatile',
       messages: [
         {
           role: 'user',
@@ -181,8 +181,9 @@ exports.suggestPrice = async (req, res) => {
     });
     
     const price = result.choices[0].message.content;
-    console.log(price);npm 
+    console.log(price);
     res.json({ price });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Something went wrong' });
