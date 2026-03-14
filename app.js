@@ -7,7 +7,9 @@ const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
 const { default: mongoose } = require('mongoose');
 const multer = require('multer');
-require('dotenv').config(); // ← Yeh add karo
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
  
 //Local Module
 const storeRouter = require("./routes/storeRouter")
@@ -27,22 +29,25 @@ const store = new MongoDBStore({
   collection: 'sessions'
 });
 
-const randomString = (length) => {
-  const characters = 'abcdefghijklmnopqrstuvwxyz';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-}
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
+// ✅ Yeh lagao - cloudinary config
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    return {
+      folder: 'decobnb',
+      resource_type: file.mimetype.startsWith('video') ? 'video' : 'image',
+    };
   },
-  filename: (req, file, cb) => {
-    cb(null, randomString(10) + '-' + file.originalname);
-  }
 });
 
 const fileFilter = (req, file, cb) => {
@@ -67,10 +72,10 @@ app.use(multer(multerOptions).fields([
   { name: 'video' },
 ]));
 app.use(express.static(path.join(rootDir, 'public')))
-app.use("/uploads", express.static(path.join(rootDir, 'uploads')))
-app.use("/host/uploads", express.static(path.join(rootDir, 'uploads')))
-app.use("/homes/uploads", express.static(path.join(rootDir, 'uploads')))
-app.use("/events/uploads", express.static(path.join(rootDir, 'uploads')))
+app.use("", express.static(path.join(rootDir, 'uploads')))
+app.use("/host", express.static(path.join(rootDir, 'uploads')))
+app.use("/homes", express.static(path.join(rootDir, 'uploads')))
+app.use("/events", express.static(path.join(rootDir, 'uploads')))
 
 app.use(session({
   secret: process.env.SESSION_SECRET, // ← .env se lo
