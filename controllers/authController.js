@@ -3,11 +3,13 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 
 exports.getLogin = (req, res, next) => {
+  const message = req.query.message || null;
   res.render("auth/login", {
     pageTitle: "Login",
     currentPage: "login",
     isLoggedIn: false,
     errors: [],
+    message: message,
     oldInput: {email: ""},
     user: {},
   });
@@ -66,7 +68,7 @@ exports.postSignup = [
   check("userType")
   .notEmpty()
   .withMessage("Please select a user type")
-  .isIn(['guest', 'host'])
+  .isIn(['guest', 'host', 'employee'])
   .withMessage("Invalid user type"),
 
   check("terms")
@@ -78,9 +80,10 @@ exports.postSignup = [
     }
     return true;
   }),
-  
+
   (req, res, next) => {
-    const {firstName, lastName, email, password, userType} = req.body;
+    const {firstName, lastName, email, password, userType, shopName, mobileNumber} = req.body;
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).render("auth/signup", {
@@ -88,28 +91,47 @@ exports.postSignup = [
         currentPage: "signup",
         isLoggedIn: false,
         errors: errors.array().map(err => err.msg),
-        oldInput: {firstName, lastName, email, password, userType},
+        oldInput: {firstName, lastName, email, password, userType,mobileNumber},
         user: {},
       });
     }
 
-    bcrypt.hash(password, 12)
-    .then(hashedPassword => {
-      const user = new User({firstName, lastName, email, password: hashedPassword, userType});
-      return user.save();
-    })
-    .then(() => {
-      res.redirect("/login");
-    }).catch(err => {
-      return res.status(422).render("auth/signup", {
-        pageTitle: "Signup",
-        currentPage: "signup",
-        isLoggedIn: false,
-        errors: [err.message],
-        oldInput: {firstName, lastName, email, userType},
-        user: {},
+    // PEHLE check karo — same email + same userType already exist karta hai?
+    User.findOne({ email: email, userType: userType })
+      .then(existingUser => {
+        if (existingUser) {
+          // already exists — login pe bhejo message ke saath
+          return res.redirect(`/login?message=Already have an account as ${userType}! Please login.`);
+        }
+
+        // naya user banao
+        return bcrypt.hash(password, 12)
+          .then(hashedPassword => {
+            const user = new User({
+              firstName,
+              lastName,
+              email,
+              password: hashedPassword,
+              userType,
+              shopName: userType === 'host' ? shopName : null,
+              mobileNumber: req.body.mobileNumber.trim(),
+            });
+            return user.save();
+          })
+          .then(() => {
+            res.redirect("/login");
+          });
+      })
+      .catch(err => {
+        return res.status(422).render("auth/signup", {
+          pageTitle: "Signup",
+          currentPage: "signup",
+          isLoggedIn: false,
+          errors: [err.message],
+          oldInput: {firstName, lastName, email, userType},
+          user: {},
+        });
       });
-    });
   }
 ]
 
@@ -122,6 +144,7 @@ exports.postLogin = async (req, res, next) => {
       currentPage: "login",
       isLoggedIn: false,
       errors: ["User does not exist"],
+      message: null,
       oldInput: {email},
       user: {},
     });
@@ -134,6 +157,7 @@ exports.postLogin = async (req, res, next) => {
       currentPage: "login",
       isLoggedIn: false,
       errors: ["Invalid Password"],
+      message: null,
       oldInput: {email},
       user: {},
     });

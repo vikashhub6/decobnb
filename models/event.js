@@ -19,13 +19,18 @@ const eventSchema = mongoose.Schema({
   },
   photo: String,
   description: String,
+  video: {
+    type: String,
+  },
+  shopName: {
+    type: String,
+    required: true,
+  },
+  hostId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  }
 });
 
-// eventSchema.pre('findOneAndDelete', async function(next) {
-//   console.log('Came to pre hook while deleting a event');
-//   const eventId = this.getQuery()._id;
-//   await favourite.deleteMany({EventId: eventId});
-//   next();
-// });
-
-module.exports = mongoose.model("Event_class", eventSchema);
+module.exports = mongoose.model('Event_class', eventSchema);

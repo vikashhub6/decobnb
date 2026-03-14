@@ -1,17 +1,32 @@
 <%- include('../partials/head') %>
   </head>
   <body>
-    <%- include('../partials/nav') %>
+   <%- include('../partials/nav', {isLoggedIn: isLoggedIn, user: user, currentPage: currentPage}) %>
     <main class="container mx-auto mt-8 p-8 bg-white rounded-lg shadow-md">
-      <h1 class="text-3xl font-bold mb-6 text-center text-gray-800"><%= editing ? "Edit" : "Register"%> Your event on decobnb</h1>
+      <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">
+        <%= editing ? "Edit" : "Register"%> Your event on decobnb
+      </h1>
       <form action="/host/<%= editing ? "edit-event" : "add-event"%>" method="POST" enctype="multipart/form-data" class="max-w-md mx-auto">
         <input type="hidden" name="id" value="<%= editing ? event._id : ''%>" />
+
         <input
+          id="EventName"
           type="text"
           name="EventName"
           value="<%= editing ? event.EventName : ''%>"
           placeholder="Enter your Event Name"
-          class="w-full px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"/>
+          class="w-full px-4 py-2 mb-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"/>
+
+          <a href ="/hgaif/afohao"> click here bro </a>
+
+        <button 
+          type="button" 
+          onclick="suggestPrice()"
+          class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-300 mb-2">
+          💡 Suggest Price
+        </button>
+        <p id="suggestion" class="text-green-600 font-medium mb-4 text-center"></p>
+
         <input
           type="text"
           name="price"
@@ -35,12 +50,55 @@
           name="photo"
           accept="image/jpg, image/jpeg, image/png"
           class="w-full px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"/>
+
+        <input
+          type="text"
+          name="shopName"
+          value="<%= editing ? event.shopName : ''%>"
+          placeholder="Shop Name"
+          class="w-full px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"/>
+        <input
+          type="file"
+          name="video"
+          accept="video/mp4, video/mpeg"
+          class="w-full px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"/>
         <textarea
           name="description"
           placeholder="Describe your event"
           class="w-full px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"><%= editing ? event.description : ''%></textarea>
-        <input type="submit" value="<%= editing ? "Update event" : "Add event"%>" class="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition duration-300" />
+        <input
+          type="submit"
+          value="<%= editing ? "Update event" : "Add event"%>"
+          class="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition duration-300"/>
       </form>
     </main>
+
+ 
+   <script>
+  async function suggestPrice() {
+    const eventName = document.getElementById('EventName');
+    
+    if (!eventName.value) {
+      alert('please first give event name!');
+      return;
+    }
+
+    document.getElementById('suggestion').innerText = '⏳ Loading...';
+
+    try {
+      const res = await fetch('/host/suggest-price', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ EventName: eventName.value })  // ✅ semicolon hataya
+      });  // 
+
+      const data = await res.json();
+      document.getElementById('suggestion').innerText = '💰 Suggested Price: ' + data.price;
+    } catch (err) {
+      document.getElementById('suggestion').innerText = '❌ please try again !';
+    }
+  }
+</script>
+  
   </body>
 </html>

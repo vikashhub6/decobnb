@@ -1,0 +1,87 @@
+<%- include('../partials/head') %>
+</head>
+<body class="bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
+  <%- include('../partials/nav') %>
+
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-red-500 mb-6">📦 Your Orders</h1>
+
+    <% if (bookings.length === 0) { %>
+      <div class="text-center text-gray-500 mt-20">
+        <p class="text-xl">No orders yet.</p>
+      </div>
+    <% } else { %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% bookings.forEach(booking => { %>
+          <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+
+            <!-- Event Image -->
+            <% if (booking.eventId && booking.eventId.photo) { %>
+              <img src="/<%= booking.eventId.photo %>" 
+                   alt="event" 
+                   class="w-full h-48 object-cover">
+            <% } %>
+
+            <div class="p-4 space-y-2">
+
+              <!-- Event Name -->
+              <h2 class="text-xl font-bold text-red-500">
+                🎉 <%= booking.eventId ? booking.eventId.EventName : 'N/A' %>
+              </h2>
+
+              <!-- Location & Price -->
+              <p class="text-gray-500 text-sm">📍 <%= booking.eventId ? booking.eventId.location : 'N/A' %></p>
+              <p class="text-green-600 font-bold">💰 Rs <%= booking.eventId ? booking.eventId.price : 'N/A' %></p>
+
+              <!-- Booking Date -->
+              <p class="text-gray-400 text-sm">
+                📅 <%= new Date(booking.createdAt).toLocaleDateString('en-PK', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+              </p>
+
+              <hr class="border-gray-100">
+<!-- Customer Card -->
+<div class="bg-blue-50 rounded-2xl p-3 space-y-2">
+  <h4 class="text-blue-600 font-bold">👤 Customer Details</h4>
+
+  <% if (booking.customerId) { %>
+    <p class="text-gray-700 text-sm">👤 <%= booking.customerId.firstName %> <%= booking.customerId.lastName %></p>
+    <p class="text-gray-700 text-sm">📧 <%= booking.customerId.email %></p>
+
+    <% 
+      var mobile = booking.customerId.mobileNumber || 
+                   booking.customerId['  mobileNumber'] || 
+                   booking.customerId[' mobileNumber'];
+    %>
+
+    <% if (mobile) { %>
+      <p class="text-gray-700 text-sm">📱 <%= mobile.trim() %></p>
+
+      <a href="tel:<%= mobile.trim() %>"
+         class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-xl font-medium transition duration-300 w-full">
+        📞 Call Customer
+      </a>
+
+      <a href="https://wa.me/91<%= mobile.trim() %>?text=Hi <%= booking.customerId.firstName %>! Your booking for <%= booking.eventId ? booking.eventId.EventName : '' %> is confirmed on DecorBnB!"
+         target="_blank"
+         class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-xl font-medium transition duration-300 w-full">
+        💬 WhatsApp Customer
+      </a>
+
+    <% } else { %>
+      <p class="text-gray-400 text-sm">Phone number not available</p>
+    <% } %>
+
+  <% } else { %>
+    <p class="text-gray-400 text-sm">Customer info not available</p>
+  <% } %>
+</div>
+
+</div>
+</div>
+<% }) %>
+</div>
+<% } %>
+</div>
+
+</body>
+</html>

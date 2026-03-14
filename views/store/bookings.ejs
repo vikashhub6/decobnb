@@ -1,10 +1,98 @@
 <%- include('../partials/head') %>
-  </head>
-  <body>
-    <%- include('../partials/nav') %>
-    <main class="container mx-auto mt-20 text-center">
-      <h2 class="text-6xl font-bold text-red-500 mb-4">My Bookings</h2>
-      <p class="text-2xl text-gray-700 mb-8">Bookings will appear here</p>
-    </main>
-  </body>
+</head>
+<body class="bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
+  <%- include('../partials/nav') %>
+  <main class="container mx-auto max-w-5xl mt-10 px-4 pb-10">
+
+    <div class="text-center mb-10">
+      <h2 class="text-5xl font-extrabold text-red-500 drop-shadow">🗓️ My Bookings</h2>
+      <p class="text-gray-500 mt-2">All your booked events in one place</p>
+    </div>
+
+    <% if (bookings.length === 0) { %>
+      <div class="text-center text-gray-400 text-xl mt-20">No bookings found!</div>
+    <% } %>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <% bookings.forEach(booking => { %>
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden transform hover:-translate-y-1 transition-all duration-300"
+             style="box-shadow: 0 10px 40px rgba(0,0,0,0.12);">
+            <!-- Event Image -->
+<% if (booking.eventId && booking.eventId.photo) { %>
+  <img src="/<%= booking.eventId.photo %>" 
+       alt="event"
+       class="w-full h-48 object-cover">
+<% } %>
+
+
+          <div class="p-5 space-y-3">
+          
+
+
+
+<!-- Event Video -->
+<% if (booking.eventId && booking.eventId.video) { %>
+  <video src="/<%= booking.eventId.video %>" controls
+         class="w-full h-48 object-cover">
+  </video>
+<% } %>
+
+            <!-- Event Name -->
+            <h3 class="text-2xl font-bold text-red-500">
+              🎉 <%= booking.eventId ? booking.eventId.EventName : 'N/A' %>
+            </h3>
+
+            <!-- Shop Name -->
+            <p class="text-gray-600 flex items-center gap-2">
+              🏪 <span class="font-medium"><%= booking.eventId ? booking.eventId.shopName : 'N/A' %></span>
+            </p>
+
+            <!-- Location -->
+            <p class="text-gray-600 flex items-center gap-2">
+              📍 <span><%= booking.eventId ? booking.eventId.location : 'N/A' %></span>
+            </p>
+
+            <!-- Price -->
+            <p class="text-green-600 font-bold text-xl flex items-center gap-2">
+              💰 Rs <%= booking.eventId ? booking.eventId.price : 'N/A' %>
+            </p>
+
+            <!-- Rating -->
+            <p class="text-yellow-500 flex items-center gap-2">
+              ⭐ <%= booking.eventId ? booking.eventId.rating : 'N/A' %> / 5
+            </p>
+
+            <!-- Booking Date -->
+            <p class="text-gray-400 text-sm flex items-center gap-2">
+              📅 Booked on: <%= new Date(booking.bookingDate).toLocaleDateString() %>
+            </p>
+
+            <!-- Divider -->
+            <hr class="border-gray-100">
+
+            <!-- Host Contact -->
+            <div class="bg-indigo-50 rounded-2xl p-3 space-y-2">
+              <h4 class="text-indigo-600 font-bold">📞 Contact Host</h4>
+              <% if (booking.hostId && booking.hostId.mobileNumber) { %>
+                <a href="tel:<%= booking.hostId.mobileNumber %>"
+                   class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-xl font-medium transition duration-300 w-full">
+                  📞 Call Now
+                </a>
+                <a href="https://wa.me/91<%= booking.hostId.mobileNumber %>?text=Hi! I'm interested in <%= booking.eventId ? booking.eventId.EventName : '' %> on decobnb."
+                   target="_blank"
+                   class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-xl font-medium transition duration-300 w-full">
+                  💬 WhatsApp
+                </a>
+              <% } else { %>
+                <p class="text-gray-400 text-sm">Host contact not available</p>
+              <% } %>
+            </div>
+
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+  </main>
+</body>
 </html>

@@ -14,6 +14,7 @@ const hostRouter = require("./routes/hostRouter")
 const authRouter = require("./routes/authRouter")
 const rootDir = require("./utils/pathUtil");
 const errorsController = require("./controllers/errors");
+const adminRouter = require('./routes/adminrouter');
 
 const app = express();
 
@@ -24,6 +25,7 @@ const store = new MongoDBStore({
   uri: DB_PATH,
   collection: 'sessions'
 });
+
 
 const randomString = (length) => {
   const characters = 'abcdefghijklmnopqrstuvwxyz';
@@ -44,25 +46,34 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg') {
+  if (
+    file.mimetype === 'image/png' ||
+    file.mimetype === 'image/jpg' ||
+    file.mimetype === 'image/jpeg' ||
+    file.mimetype === 'video/mp4' ||
+    file.mimetype === 'video/mpeg'
+  ) {
     cb(null, true);
   } else {
     cb(null, false);
   }
-}
+};
 
 const multerOptions = {
   storage, fileFilter
 };
 
 app.use(express.urlencoded());
-app.use(multer(multerOptions).single('photo'));
+app.use(multer(multerOptions).fields([
+  { name: 'photo' },
+  { name: 'video'},
+]));
 app.use(express.static(path.join(rootDir, 'public')))
 app.use("/uploads", express.static(path.join(rootDir, 'uploads')))
 app.use("/host/uploads", express.static(path.join(rootDir, 'uploads')))
 app.use("/homes/uploads", express.static(path.join(rootDir, 'uploads')))
 app.use("/events/uploads", express.static(path.join(rootDir, 'uploads')))
-
+// app.use("/bookings", express.static(path.join(rootDir, 'uploads')))
 
 app.use(session({
   secret: "KnowledgeGate AI with Complete Coding",
@@ -78,6 +89,7 @@ app.use((req, res, next) => {
 
 app.use(authRouter)
 app.use(storeRouter);
+app.use(adminRouter);
 app.use("/host", (req, res, next) => {
   if (req.isLoggedIn) {
     next();
@@ -89,7 +101,7 @@ app.use("/host", hostRouter);
 
 app.use(errorsController.pageNotFound);
 
-const PORT = 3004;
+const PORT = 3006;
 
 mongoose.connect(DB_PATH).then(() => {
   console.log('Connected to Mongo');

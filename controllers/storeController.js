@@ -2,7 +2,7 @@
 
 const Event_class = require('../models/event')
 const User = require('../models/user')
-
+const Booked = require('../models/booked'); 
 
 
 
@@ -32,14 +32,7 @@ exports.getevents = (req, res, next) => {
   });
 };
 
-exports.getBookings = (req, res, next) => {
-  res.render("store/bookings", {
-    pageTitle: "My Bookings",
-    currentPage: "bookings",
-    isLoggedIn: req.isLoggedIn, 
-    user: req.session.user,
-  });
-};
+
 
 exports.getFavouriteList = async (req, res, next) => {
   const userId = req.session.user._id;
@@ -75,21 +68,40 @@ exports.postRemoveFromFavourite = async (req, res, next) => {
   }
   res.redirect("/favourites");
 };
-
-exports.geteventDetails = (req, res, next) => {
+exports.geteventDetails = async (req, res, next) => {
   const eventId = req.params.eventId;
-   Event_class.findById(eventId).then((event) => {
-    if (!event) {
-      console.log("event not found");
-      res.redirect("/events");
-    } else {
-      res.render("store/event-detail", {
-        event: event,
-        pageTitle: "event Detail",
-        currentPage: "event",
-        isLoggedIn: req.isLoggedIn, 
-        user: req.session.user,
-      });
-    }
+  const event = await Event_class.findById(eventId).populate('hostId');
+
+  if (!event) {
+    console.log("event not found");
+    return res.redirect("/events");
+  }
+
+  res.render("store/event-detail", {
+    event: event,
+    pageTitle: "event Detail",
+    currentPage: "event",
+    isLoggedIn: req.isLoggedIn,
+    user: req.session.user,
   });
 };
+
+exports.getMyBookings = async (req, res, next) => {
+  const customerId = req.session.user._id;
+  console.log("BOOKINGS ROUTE HIT");
+  
+  const bookings = await Booked.find({ customerId: customerId })
+    .populate('eventId')
+    .populate('hostId');
+
+  res.render('store/bookings', {
+    bookings: bookings,
+    pageTitle: "My Bookings",
+    currentPage: "bookings",  // <-- yeh add karo
+    isLoggedIn: req.isLoggedIn,
+    user: req.session.user,
+  });
+};
+
+
+
